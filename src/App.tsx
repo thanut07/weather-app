@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import TextField from "./component/TextFeild";
 
 export default function App() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  // const [city, setCity] = useState("");
+  const [city, setCity] = useState("");
   // const [weatherData, setWeatherData] = useState<any>(null);
-  // const [error, setError] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -24,9 +24,37 @@ export default function App() {
           setLoading(false);
         })
         .catch((err) => console.log("feth error", err));
-      setLoading(false);
+      // setLoading(false);
     });
   }, []);
+
+  const fetchWeatherByCity = (cityName: string) => {
+    const apiKey = "04b51d4d7ecf042f49db16204f2a4f86";
+    setLoading(true);
+    setError("");
+    fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=metric&lang=en`
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("City not found");
+        return res.json();
+      })
+      .then((resData) => {
+        setData(resData);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setData(null);
+        setLoading(false);
+      });
+  };
+
+  const handleSearch = () => {
+    if (city.trim()) {
+      fetchWeatherByCity(city.trim());
+    }
+  };
 
   function formatDate(date: Date): string {
     return date.toLocaleDateString("en-GB", {
@@ -46,7 +74,6 @@ export default function App() {
     nextDays.push(formatDate(next));
   }
 
-  if (loading) return <div>Loading...</div>;
   if (!data || !data.list) return <div> No data </div>;
   const firstItem = data.list[7];
   const secondItem = data.list[15];
@@ -54,123 +81,102 @@ export default function App() {
   const fourthItem = data.list[31];
   const fifthItem = data.list[39];
 
+  if (loading) return <div>Loading...</div>;
+  if (error) {
+    console.log(error);
+  }
+
   return (
     <section className="w-full min-h-screen flex flex-col justify-center items-center">
       <div className="w-full md:w-6/12 bg-white p-6 rounded-xl shadow-lg">
         <h3 className="w-full text-end flex items-center gap-2 py-4">
-          <div className="w-10/12 pad-main">
+          <div className="w-8/12 md:w-9/12 lg:w-10/12 pad-main">
             <TextField
               id="search"
               name="search"
               placeholder="search city..."
-              // value={values.search}
-              // onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              //   setFieldValue("search", e.target.value)
-              // }
               iconsearch
+              value={city}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setCity(e.target.value)
+              }
             />
           </div>
-          <button className="w-2/12 btn-base bg-blue-950 text-white">
+          <button
+            onClick={handleSearch}
+            className="w-4/12 md:w-3/12 lg:w-2/12 rounded-lg bg-blue-950 text-white p-2"
+          >
             search
           </button>
         </h3>
 
         <h3 className="font-bold"> {data.city.name} </h3>
         <div className="w-full flex flex-wrap items-center">
-          <div className="w-full md:w-6/12">
+          <div className="w-full md:w-6/12 flex justify-center">
             <img
-              className="w-9/12"
+              className="w-6/12 lg:w-8/12"
               src={`https://openweathermap.org/img/wn/${firstItem.weather[0].icon}@2x.png`}
             />
           </div>
 
-          <div className="w-full md:w-6/12 flex flex-col gap-3">
-            <h2 className=""> {firstItem.weather[0].description} </h2>
-            <h1 className="text-4xl lg:text-5xl font-bold">
-              {firstItem.main.temp} ํC
-            </h1>
-            <h4 className="text-black/40"> {nextDays[0]} </h4>
+          <div className="w-full md:w-6/12 flex flex-col gap-2">
+            <p> {firstItem.weather[0].description} </p>
+            <p className="text-2xl lg:text-5xl font-bold">
+              {firstItem.main.temp} &deg;C
+            </p>
+            <p className="text-black/40"> {nextDays[0]} </p>
           </div>
         </div>
       </div>
 
       {/* 2 */}
-      <div className="w-full md:w-6/12 grid grid-cols-2 md:grid-cols-4 mt-4 gap-2">
+      <div className="w-full md:w-6/12 grid grid-cols-2 lg:grid-cols-4 mt-4 gap-2">
         <div className="p-2 bg-white shadow-lg rounded-xl">
           <div className="w-full flex justify-center">
             <img
-              className="w-9/12"
+              className="w-6/12 lg:w-8/12"
               src={`https://openweathermap.org/img/wn/${secondItem.weather[0].icon}@2x.png`}
             />
           </div>
-          <p className="text-center font-bold"> {secondItem.main.temp} ํC </p>
-          <p>{secondItem.weather[0].description}</p>
-          <p className="text-black/40 text-md md:text-xs">
-            {nextDays[1]}
-          </p>
+          <p className="text-center font-bold">{secondItem.main.temp} &deg;C</p>
+          <p className="text-xs">{secondItem.weather[0].description}</p>
+          <p className="text-black/40 text-xs">{nextDays[1]}</p>
         </div>
         <div className="p-2 bg-white shadow-lg rounded-xl">
           <div className="w-full flex justify-center">
             <img
-              className="w-9/12"
+              className="w-6/12 lg:w-8/12"
               src={`https://openweathermap.org/img/wn/${thirdItem.weather[0].icon}@2x.png`}
             />
           </div>
-          <p className="text-center font-bold"> {thirdItem.main.temp} ํC </p>
-          <p>{thirdItem.weather[0].description}</p>
-          <p className="text-black/40 text-md md:text-xs">{nextDays[2]}</p>
+          <p className="text-center font-bold ">{thirdItem.main.temp} &deg;C</p>
+          <p className="text-xs">{thirdItem.weather[0].description}</p>
+          <p className="text-black/40 text-xs">{nextDays[2]}</p>
         </div>
         <div className="p-2 bg-white shadow-lg rounded-xl">
           <div className="w-full flex justify-center">
             <img
-              className="w-9/12"
+              className="w-6/12 lg:w-8/12"
               src={`https://openweathermap.org/img/wn/${fourthItem.weather[0].icon}@2x.png`}
             />
           </div>
-          <p className="text-center font-bold"> {fourthItem.main.temp} ํC </p>
-          <p>{fourthItem.weather[0].description}</p>
-          <p className="text-black/40 text-md md:text-xs">
-            {nextDays[3]}
+          <p className="text-center font-bold ">
+            {fourthItem.main.temp} &deg;C
           </p>
+          <p className="text-xs">{fourthItem.weather[0].description}</p>
+          <p className="text-black/40 text-xs">{nextDays[3]}</p>
         </div>
         <div className="p-2 bg-white shadow-lg rounded-xl">
           <div className="w-full flex justify-center">
             <img
-              className="w-9/12"
+              className="w-6/12 lg:w-8/12"
               src={`https://openweathermap.org/img/wn/${fifthItem.weather[0].icon}@2x.png`}
             />
           </div>
-          <p className="text-center font-bold"> {fifthItem.main.temp} ํC </p>
-          <p>{fifthItem.weather[0].description}</p>
-          <p className="text-black/40 text-md md:text-xs">{nextDays[4]}</p>
+          <p className="text-center font-bold ">{fifthItem.main.temp} &deg;C</p>
+          <p className="text-xs">{fifthItem.weather[0].description}</p>
+          <p className="text-black/40 text-xs">{nextDays[4]}</p>
         </div>
-        {/* <div className="p-2 bg-white shadow-lg rounded-xl">
-          <div className="w-full flex justify-center">
-            <img
-              className="w-9/12"
-              src={`https://openweathermap.org/img/wn/${firstItem.weather[0].icon}@2x.png`}
-            />
-          </div>
-          {secondItem.weather[0].description}
-        </div>
-        <div className="p-2 bg-white shadow-lg rounded-xl">
-          <div className="w-full flex justify-center">
-            <img
-              className="w-9/12"
-              src={`https://openweathermap.org/img/wn/${firstItem.weather[0].icon}@2x.png`}
-            />
-          </div>
-          {secondItem.weather[0].description}
-        </div>
-        <div className="p-2 bg-white shadow-lg rounded-xl">
-          <div className="w-full flex justify-center">
-            <img
-              className="w-9/12"
-              src={`https://openweathermap.org/img/wn/${firstItem.weather[0].icon}@2x.png`}
-            />
-          </div>
-          {secondItem.weather[0].description}
-        </div> */}
       </div>
     </section>
   );
