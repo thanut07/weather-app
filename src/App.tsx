@@ -74,6 +74,11 @@ export default function App() {
     nextDays.push(formatDate(next));
   }
 
+  //   const dailyData = data.list.filter((item: any) =>
+  //   item.dt_txt.includes("12:00:00")
+  // );
+
+  if (loading) return <div>Loading...</div>;
   if (!data || !data.list) return <div> No data </div>;
   const firstItem = data.list[7];
   const secondItem = data.list[15];
@@ -81,7 +86,6 @@ export default function App() {
   const fourthItem = data.list[31];
   const fifthItem = data.list[39];
 
-  if (loading) return <div>Loading...</div>;
   if (error) {
     console.log(error);
   }
