@@ -18,9 +18,9 @@ export default function App() {
 
       fetch(url)
         .then((res) => res.json())
-        .then((resData) => {
-          console.log(resData);
-          setData(resData);
+        .then((res) => {
+          console.log(res);
+          setData(res);
           setLoading(false);
         })
         .catch((err) => console.log("feth error", err));
